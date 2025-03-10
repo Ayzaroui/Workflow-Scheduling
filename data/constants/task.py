@@ -1,5 +1,5 @@
 class Task(object):
-    def __init__(self, id, parallelism, required_ram, n_instructions, input_size, output_size, is_assigned):
+    def __init__(self, id, parallelism, required_ram, n_instructions, input_size, output_size, is_assigned=False):
         self.id = id
         self.parallelism = parallelism
         self.required_ram = required_ram
