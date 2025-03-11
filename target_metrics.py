@@ -13,7 +13,8 @@ def f_cost(dataset, solution):
     for task in dataset.tasks:
         for machine in dataset.machines:
             if solution[task.id, machine.id] == 1:
-                cost += machine.exec_cost(task) + dataset.bandwidth_cost(task, machine)
+                exec_cost = task.n_instructions / machine.cpu_mips * machine.cpu_cost
+                cost += exec_cost + dataset.bandwidth_cost(task, machine)
     
     return cost
 
