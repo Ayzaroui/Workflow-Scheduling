@@ -23,18 +23,11 @@ class Machine(object):
 
     def __str__(self):
         return f"Machine {self.id}:\n"\
-            f"bandwidth: {self.bandwidth}\n"\
             f"cpu_cost: {self.cpu_cost}\n"\
             f"cpu_mips: {self.cpu_mips}\n"\
-            f"bandwidth_cost: {self.bandwidth_cost}\n"\
             f"is_cloud: {self.is_cloud}\n"\
             f"is_available: {self.is_available}\n"\
             f"start_use: {self.start_use}\n"\
             f"use_time: {self.use_time}\n"\
             f"used_once: {self.used_once}\n"
-    
-    def get_machine_by_id(machines, id):
-        for machine in machines:
-            if machine.id == id:
-                return machine
     

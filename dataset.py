@@ -107,6 +107,12 @@ class Dataset():
 
     def plot(self):
         return plot_task_graph(self.tasks)
+    
+    def get_task_by_id(self, tasks_id):
+        return self.tasks[tasks_id]
+    
+    def get_machine_by_id(self, machines_id):
+        return self.machines[machines_id]
 
 # def get_available_machines(machines):
 #     return [machine for machine in machines if machine.is_available]
@@ -187,17 +193,7 @@ class Dataset():
     
 
 
-    
-    # def execute_tasks(self, tasks, machines,start=False):
-    #     if start:
-    #         task = tasks[0]
-    #     undone_tasks = self.get_undone_tasks(tasks)
-    #     task, machine = self.affect_task(task, machines)
-    #     children = task.get_children(undone_tasks)
-    #     task, machine, unused_machines = self.execute_task(task, machines)
-    #     for child in children:
-    #         child, machine, unused_machines = self.execute_tasks(children, machines, start=False)
-    #     return task, machine
+
 
 
 # Création du dataset avec 5 machines et 10 tâches
