@@ -2,7 +2,6 @@ import numpy as np
 import random
 import os
 
-from problem import compute_metrics
 
 def target_functions(solution):
     """
