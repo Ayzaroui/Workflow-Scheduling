@@ -127,14 +127,14 @@ def compute_metrics(dataset, solution):
     return makespan, cost
 
 
-from dataset import Dataset
-# test the functions with mock solution
-dataset = Dataset(n_machines=5, n_tasks=10)
-solution = np.zeros((dataset.n_tasks, dataset.n_machines))
-# make sure the solution is feasible
-for line in solution:
-    line[np.random.randint(0, dataset.n_machines)] = 1
-print(solution)
-makespan, cost = compute_metrics(dataset, solution)
-print("Makespan:", makespan)
-print("Cost:", cost)
+# from dataset import Dataset
+# # test the functions with mock solution
+# dataset = Dataset(n_machines=5, n_tasks=10)
+# solution = np.zeros((dataset.n_tasks, dataset.n_machines))
+# # make sure the solution is feasible
+# for line in solution:
+#     line[np.random.randint(0, dataset.n_machines)] = 1
+# print(solution)
+# makespan, cost = compute_metrics(dataset, solution)
+# print("Makespan:", makespan)
+# print("Cost:", cost)
