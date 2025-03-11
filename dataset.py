@@ -58,7 +58,7 @@ def generate_machines(n_machines, is_cloud):
         machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
         cpu_cost = np.random.uniform(machines_params_range["cpu_cost"][0], machines_params_range["cpu_cost"][1])
         cpu_mips = np.random.randint(machines_params_range["cpu_mips"][0], machines_params_range["cpu_mips"][1])
-        machines.append(Machine(cpu_cost, cpu_mips, is_cloud))
+        machines.append(Machine(i, cpu_cost, cpu_mips, is_cloud))
     return machines
 
 def generate_tasks_graph(n_tasks):
@@ -66,7 +66,7 @@ def generate_tasks_graph(n_tasks):
     for i in range(n_tasks):
         parents_id = generer_parents(n_tasks, i)
         n_instructions = np.random.randint(task_params_range["n_instructions"][0], task_params_range["n_instructions"][1])
-        tasks.append(Task(parents_id, n_instructions))
+        tasks.append(Task(i, parents_id, n_instructions))
     return tasks
 
 def plot_task_graph(tasks):

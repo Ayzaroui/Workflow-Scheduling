@@ -1,9 +1,8 @@
 class Machine(object):
     _id_counter = 0
-    def __init__(self, cpu_cost, cpu_mips, is_cloud, is_available=True, start_use=0.0, use_time=0.0, used_once=False):
-        self.id = Machine._id_counter
-        Machine._id_counter += 1
-
+    def __init__(self, id, cpu_cost, cpu_mips, is_cloud, is_available=True, start_use=0.0, use_time=0.0, used_once=False):
+        
+        self.id = id
         self.cpu_cost = cpu_cost
         self.cpu_mips = cpu_mips
         self.is_cloud = is_cloud

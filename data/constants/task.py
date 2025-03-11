@@ -1,14 +1,11 @@
 class Task(object):
     _id_counter = 0  # Variable de classe pour suivre l'ID des tâches
 
-    def __init__(self, parents_id, n_instructions, input_size, output_size, is_assigned=-1, parent_done=False, is_done=False):
-        self.id = Task._id_counter  # Assigne un ID unique
-        Task._id_counter += 1  # Incrémente le compteur global
-
+    def __init__(self, id, parents_id, n_instructions, is_assigned=-1, parent_done=False, is_done=False):
+        
+        self.id = id
         self.parent_id = parents_id
         self.n_instructions = n_instructions
-        self.input_size = input_size
-        self.output_size = output_size
         self.is_assigned = is_assigned
         self.is_done = is_done
 
