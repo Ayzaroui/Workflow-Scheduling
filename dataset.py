@@ -1,6 +1,6 @@
 import random
 import numpy as np
-#import networkx as nx
+import networkx as nx
 import matplotlib.pyplot as plt
 
 from data.constants.task import Task
@@ -73,23 +73,24 @@ def generate_tasks_graph(n_tasks):
 
 def plot_task_graph(tasks):
     pass
-#     G = nx.DiGraph()
+    G = nx.DiGraph()
 
 
-#     for task in tasks:
-#         G.add_node(task.id)
+    for task in tasks:
+        G.add_node(task.id)
 
-#     # Ajouter les arêtes en remplaçant None par 0 (Root) pour qu'il n'y ait pas de doublons
-#     for task in tasks:
-#         parent = task.parent_id  # Si parent_id est None, il sera remplacé par 0 lors de l'ajout des arêtes
-#         G.add_edge(parent, task.id)  # Ajout d'arêtes avec le parent_id correct
+    # Ajouter les arêtes en remplaçant None par 0 (Root) pour qu'il n'y ait pas de doublons
+    for task in tasks:
+        if task.parents_id:
+            for parent in task.parents_id:
+                G.add_edge(parent, task.id)  # Ajout d'arêtes avec le parent_id correct
 
-#     # Générer la mise en page avec plus d'espacement
-#     pos = nx.spring_layout(G, k=3, seed=42)  # Augmenter k pour espacer les nœuds
-#     nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, edge_color='gray')
+    # Générer la mise en page avec plus d'espacement
+    pos = nx.spring_layout(G, k=2, seed=42)  # Augmenter k pour espacer les nœuds
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, edge_color='gray')
 
-#     plt.title("Graphe des tâches")
-#     plt.show()
+    plt.title("Graphe des tâches")
+    plt.show()
 
 
 
@@ -110,11 +111,11 @@ class Dataset():
     def plot(self):
         return plot_task_graph(self.tasks)
     
-    def get_task_by_id(self, tasks_id):
-        return self.tasks[tasks_id]
+    def get_task_by_id(self, task_id):
+        return self.tasks[task_id]
     
-    def get_machine_by_id(self, machines_id):
-        return self.machines[machines_id]
+    def get_machine_by_id(self, machine_id):
+        return self.machines[machine_id]
 
 # def get_available_machines(machines):
 #     return [machine for machine in machines if machine.is_available]
@@ -192,15 +193,12 @@ class Dataset():
 #     return task, machine, unused_machines
 
 
-    
-
-
-
-
 
 # Création du dataset avec 5 machines et 10 tâches
 dataset = Dataset(n_machines=5, n_tasks=10)
-print(dataset.machines[0])
+print(dataset.get_machine_by_id(0))
+print(dataset.get_task_by_id(2))
+dataset.plot()
 
 
 
