@@ -1,6 +1,6 @@
 import random
 import numpy as np
-import networkx as nx
+#import networkx as nx
 import matplotlib.pyplot as plt
 
 from data.constants.task import Task
@@ -36,13 +36,15 @@ def generate_bandwith(n_machines, is_cloud):
 
 def generate_bandwith_cost(n_machines, is_cloud):
     machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
-    bandwith_cost = np.random.randint(machines_params_range["bandwidth_cost"][0], machines_params_range["bandwidth_cost"][1], size=(n_machines, n_machines))
+    bandwith_cost = np.random.uniform(machines_params_range["bandwidth_cost"][0], machines_params_range["bandwidth_cost"][1], size=(n_machines, n_machines))
     np.fill_diagonal(bandwith_cost, 0)
     return bandwith_cost
 
 def generer_parents(n_tasks, task_id):
     if task_id == 0:
         return []
+    if task_id == 1:
+        return [] if np.random.rand() < 0.5 else [0]
     taille = np.random.randint(0, n_tasks-1)  
     parents = np.random.randint(0, task_id-1, size=taille).tolist()
     return parents
@@ -198,6 +200,7 @@ class Dataset():
 
 # Création du dataset avec 5 machines et 10 tâches
 dataset = Dataset(n_machines=5, n_tasks=10)
+print(dataset.machines[0])
 
 
 
