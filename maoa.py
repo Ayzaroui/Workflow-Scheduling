@@ -65,11 +65,10 @@ def update_population(population, archive, mu, moa, mop, n, p):
                     p_new[i, j] = leader[j] * mop * mu
             else:
                 # Exploitation Step
-                if r3 > moa:
-                    if r2 > 0.5:
-                        p_new[i, j] = leader[j] - (mop * mu)
-                    else:
-                        p_new[i, j] = leader[j] + (mop * mu)
+                if r3 > 0.5:
+                    p_new[i, j] = leader[j] - (mop * mu)
+                else:
+                    p_new[i, j] = leader[j] + (mop * mu)
         p_new[i, :-2] = repair_solution(p_new[i, :-2], n, p)
         p_new[i, -2:] = target_functions(p_new[i, :-2].reshape(n, p))
     return p_new
