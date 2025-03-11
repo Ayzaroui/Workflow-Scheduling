@@ -29,17 +29,17 @@ task_params_range = {
 }
 
 # Fonctions
-def generate_bandwith(n_machines, is_cloud):
+def generate_bandwidth(n_machines, is_cloud):
     machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
-    bandwith = np.random.randint(machines_params_range["bandwidth"][0], machines_params_range["bandwidth"][1], size=(n_machines, n_machines))
-    np.fill_diagonal(bandwith, 0)
-    return bandwith
+    bandwidth = np.random.randint(machines_params_range["bandwidth"][0], machines_params_range["bandwidth"][1], size=(n_machines, n_machines))
+    np.fill_diagonal(bandwidth, 0)
+    return bandwidth
 
-def generate_bandwith_cost(n_machines, is_cloud):
+def generate_bandwidth_cost(n_machines, is_cloud):
     machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
-    bandwith_cost = np.random.uniform(machines_params_range["bandwidth_cost"][0], machines_params_range["bandwidth_cost"][1], size=(n_machines, n_machines))
-    np.fill_diagonal(bandwith_cost, 0)
-    return bandwith_cost
+    bandwidth_cost = np.random.uniform(machines_params_range["bandwidth_cost"][0], machines_params_range["bandwidth_cost"][1], size=(n_machines, n_machines))
+    np.fill_diagonal(bandwidth_cost, 0)
+    return bandwidth_cost
 
 def generer_parents(n_tasks, task_id):
     if task_id == 0:
@@ -98,8 +98,8 @@ class Dataset():
 
         self.data_volume = generate_data_volume(n_tasks)
 
-        self.bandwith = generate_bandwith(n_machines, is_cloud)
-        self.bandwith_cost = generate_bandwith_cost(n_machines, is_cloud)
+        self.bandwidth = generate_bandwidth(n_machines, is_cloud)
+        self.bandwidth_cost = generate_bandwidth_cost(n_machines, is_cloud)
 
     def plot(self):
         return plot_task_graph(self.tasks)
@@ -187,11 +187,11 @@ class Dataset():
 
 
 
-# Création du dataset avec 5 machines et 10 tâches
-dataset = Dataset(n_machines=5, n_tasks=10)
-print(dataset.get_machine_by_id(0))
-print(dataset.get_task_by_id(2))
-dataset.plot()
+# # Création du dataset avec 5 machines et 10 tâches
+# dataset = Dataset(n_machines=5, n_tasks=10)
+# print(dataset.get_machine_by_id(0))
+# print(dataset.get_task_by_id(2))
+# dataset.plot()
 
 
 
