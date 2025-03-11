@@ -13,8 +13,14 @@ def f_cost(dataset, solution):
     for task in dataset.tasks:
         for machine in dataset.machines:
             if solution[task.id, machine.id] == 1:
+                # Execution cost
                 exec_cost = task.n_instructions / machine.cpu_mips * machine.cpu_cost
-                cost += exec_cost + dataset.bandwidth_cost(task, machine)
+                # Communication cost
+                predecessors = [dataset.get_task_by_id(id) for id in task.parents_id]
+                pred_machines = [p.is_assigned for p in predecessors]
+                transfer_cost = sum([dataset.bandwidth_cost[id, machine.id] for id in pred_machines])
+                # Update total cost
+                cost += exec_cost + transfer_cost
     
     return cost
 
@@ -41,6 +47,7 @@ def check_feasibility(dataset, solution):
     """
     # each task is assigned to exactly one machine
     if not np.all(np.sum(solution, axis=1) == 1):
+        print("Error! Each task must be assigned to exactly one machine")
         return False
     # # each machine can execute one task at a time
     # if ???:
@@ -64,7 +71,7 @@ def schedule(dataset, solution):
     for task in dataset.tasks:
         for machine in dataset.machines:
             if solution[task.id, machine.id] == 1:
-                execute_task(task, machine)
+                execute_task(dataset, task, machine)
 
 def execute_task(dataset, task, machine):
     """Assign a task to a machine.
@@ -75,14 +82,20 @@ def execute_task(dataset, task, machine):
     # assign task to machine
     task.is_assigned = machine.id
     # get predecessors
-    predecessors = [dataset.get_task_by_id(id) for id in task.predecessors]
+    predecessors = [dataset.get_task_by_id(id) for id in task.parents_id]
     # get communication time
     pred_machines = [p.is_assigned for p in predecessors]
-    bandwidths = np.ndarray([dataset.bandwidth(id, machine.id) for id in pred_machines])
-    data_volumes = np.ndarray([dataset.data_volume(p, task.id) for p in task.predecessors])
-    end_times = np.ndarray([p.end_time for p in predecessors])
+    bandwidths = [dataset.bandwidth[id, machine.id] for id in pred_machines]
+    data_volumes = [dataset.data_volume[p, task.id] for p in task.parents_id]
+    end_times = [p.end_time for p in predecessors]
     # get end time of predecessors
-    pred_end = max(end_times + data_volumes / bandwidths)
+    pred_end = 0
+    for i in range(len(predecessors)):
+        if bandwidths[i] == 0:
+            transfer_time = 0
+        else:
+            transfer_time = data_volumes[i] / bandwidths[i]
+        pred_end = max(pred_end, end_times[i] + transfer_time)
     # get start
     start_time = max(pred_end, machine.end_time)
     # get end time
@@ -112,3 +125,16 @@ def compute_metrics(dataset, solution):
     cost = f_cost(dataset, solution)
 
     return makespan, cost
+
+
+from dataset import Dataset
+# test the functions with mock solution
+dataset = Dataset(n_machines=5, n_tasks=10)
+solution = np.zeros((dataset.n_tasks, dataset.n_machines))
+# make sure the solution is feasible
+for line in solution:
+    line[np.random.randint(0, dataset.n_machines)] = 1
+print(solution)
+makespan, cost = compute_metrics(dataset, solution)
+print("Makespan:", makespan)
+print("Cost:", cost)
