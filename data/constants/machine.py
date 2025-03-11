@@ -1,6 +1,7 @@
 class Machine(object):
     _id_counter = 0
     def __init__(self, bandwidth, cpu_cost, cpu_mips, bandwidth_cost, is_cloud, is_available=True, start_use=0.0, use_time=0.0, used_once=False):
+        self.id = Machine._id_counter
         Machine._id_counter += 1
 
         self.bandwidth = bandwidth
@@ -15,17 +16,30 @@ class Machine(object):
     
         """
         bandwidth: int -> bandwidth in Mbps
-        ram: int -> RAM in Go
-        ram_cost: float -> RAM cost per hour or per unit
-        n_cpus: int -> number of CPUs
         cpu_cost: float -> CPU cost per hour or per unit
         cpu_mips: int -> CPU MIPS
         bandwidth_cost: float -> bandwidth cost per Go or per Mbps
-        distance: int -> distance in km
         is_cloud: bool -> whether the machine is in the cloud or not
         is_available: bool -> whether the machine is available or not
         start_use: float -> start use time in seconds
         use_time: float -> use time in seconds
         used_once: bool -> whether the machine has been used once or not
         """
+
+    def __str__(self):
+        return f"Machine {self.id}:\n"\
+            f"bandwidth: {self.bandwidth}\n"\
+            f"cpu_cost: {self.cpu_cost}\n"\
+            f"cpu_mips: {self.cpu_mips}\n"\
+            f"bandwidth_cost: {self.bandwidth_cost}\n"\
+            f"is_cloud: {self.is_cloud}\n"\
+            f"is_available: {self.is_available}\n"\
+            f"start_use: {self.start_use}\n"\
+            f"use_time: {self.use_time}\n"\
+            f"used_once: {self.used_once}\n"
+    
+    def get_machine_by_id(machines, id):
+        for machine in machines:
+            if machine.id == id:
+                return machine
     

@@ -10,19 +10,17 @@ class Task(object):
         self.input_size = input_size
         self.output_size = output_size
         self.is_assigned = is_assigned
-        self.parent_done = parent_done
         self.is_done = is_done
 
     """
     parent_id: int -> ID de la tâche parente
-    parallelism: int -> Pourcentage de parallélisme
-    required_ram: int -> RAM requise
     n_instructions: int -> Nombre d'instructions
     input_size: int -> Taille des données d'entrée
     output_size: int -> Taille des données de sortie
     is_assigned: int -> Machine à laquelle la task est affectée (-1 sinon)
     """
-    def get_task_by_id(self, tasks, task_id):
+    @staticmethod
+    def get_task_by_id(tasks, task_id):
         for task in tasks:
             if task.id == task_id:
                 return task

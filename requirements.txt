@@ -1,4 +1,6 @@
 pymoo
 numpy
 prefect
+matplotlib
+networkx
 .
