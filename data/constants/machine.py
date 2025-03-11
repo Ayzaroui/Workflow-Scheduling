@@ -13,13 +13,15 @@ class Machine(object):
         self.end_time = 0
     
         """
-        cpu_cost: float -> CPU cost per hour or per unit
-        cpu_mips: int -> CPU MIPS
-        is_cloud: bool -> whether the machine is in the cloud or not
-        is_available: bool -> whether the machine is available or not
-        start_use: float -> start use time in seconds
-        use_time: float -> use time in seconds
-        used_once: bool -> whether the machine has been used once or not
+        id: int -> Identifiant unique de la tâche.
+        cpu_cost: float -> Coût d'utilisation du CPU (par heure ou par unité de temps).
+        cpu_mips: int -> Performance du CPU en MIPS (Million Instructions Per Second).
+        is_cloud: bool -> Indique si la machine est une machine cloud (True) ou locale (False).
+        is_available: bool -> Indique si la machine est disponible pour exécuter des tâches.
+        start_use: float -> Temps de début d'utilisation de la machine en secondes.
+        use_time: float -> Temps total d'utilisation de la machine en secondes.
+        used_once: bool -> Indique si la machine a déjà été utilisée au moins une fois.
+        end_time: float -> Temps de fin d'utilisation de la machine (initialisé à 0).
         """
 
     def __str__(self):
@@ -30,5 +32,6 @@ class Machine(object):
             f"is_available: {self.is_available}\n"\
             f"start_use: {self.start_use}\n"\
             f"use_time: {self.use_time}\n"\
-            f"used_once: {self.used_once}\n"
+            f"used_once: {self.used_once}\n"\
+            f"end_time: {self.end_time}\n"
     

@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from data.constants.task import Task
 from data.constants.machine import Machine
 
+# Random Seed
+random.seed()
 np.random.seed(random.randint(0, 2**12 - 1))  
 
 # Paramètres
@@ -41,13 +43,13 @@ def generate_bandwidth_cost(n_machines, is_cloud):
     np.fill_diagonal(bandwidth_cost, 0)
     return bandwidth_cost
 
-def generer_parents(n_tasks, task_id):
+def generer_parents(task_id):
     if task_id == 0:
         return []
     if task_id == 1:
         return [] if np.random.rand() < 0.5 else [0]
-    taille = np.random.randint(0, task_id-1)  
-    parents = np.random.randint(0, task_id-1, size=taille).tolist()
+    taille = np.random.randint(0, task_id)  
+    parents = np.random.randint(0, task_id, size=taille).tolist()
     return parents
 
 def generate_data_volume(n_tasks):
@@ -67,7 +69,7 @@ def generate_machines(n_machines, is_cloud):
 def generate_tasks_graph(n_tasks):
     tasks = []
     for i in range(n_tasks):
-        parents_id = generer_parents(n_tasks, i)
+        parents_id = generer_parents(i)
         n_instructions = np.random.randint(task_params_range["n_instructions"][0], task_params_range["n_instructions"][1])
         tasks.append(Task(i, parents_id, n_instructions))
     return tasks
@@ -110,88 +112,9 @@ class Dataset():
     def get_machine_by_id(self, machine_id):
         return self.machines[machine_id]
 
-# def get_available_machines(machines):
-#     return [machine for machine in machines if machine.is_available]
 
-# def exec_time(self, task, machine):
-#     return task.n_instructions / machine.cpu_mips
-
-# def bandwidth_time(self, task, machine):
-#     return task.input_size / machine.bandwidth
-
-# def total_time(self, task, machine):
-#     return self.exec_time(task, machine) + self.bandwidth_time(task, machine)
-
-# def exec_cost(self, task, machine):
-#     return task.n_instructions * machine.cpu_cost
-
-# def bandwidth_cost(self, task, machine):
-#     return task.input_size * machine.bandwidth_cost
-
-# def total_cost(self, task, machine):
-#     return self.exec_cost(task, machine) + self.bandwidth_cost(task, machine)
-
-# def get_undone_tasks(self, tasks):
-#     return [task for task in tasks if not task.is_done]
-
-# def get_unused_machines(self, machines):
-#     return [machine for machine in machines if not machine.used_once]
-
-# def affect_task(self, task, machines):
-#     print("ID:", task.id)
-#     parent_task = Task.get_task_by_id(tasks, task.parent_id)
-#     if not parent_task.is_done and task.parent_id != 0:
-#         print("Error! Parent task not done")
-#         return None
-#     available_machines = self.get_available_machines(machines)
-#     for mach in available_machines:
-#         print(mach.id, mach.is_available)
-#     if not available_machines:
-#         print("Error! No available machines")
-#         return None
-    
-#     machine = available_machines[np.random.randint(0, len(available_machines))]
-    
-#     machine.is_available = False
-
-#     task.is_assigned = machine.id
-#     print(task.is_assigned)
-
-#     available_machines.remove(machine)
-#     print("Task assigned to machine", machine.id)
-#     return task, machine, available_machines
-    
-# def execute_task(self, task, machine, machines):
-#     print("ID:", task.id)
-#     print("Machine:", task.is_assigned)
-#     if task.is_assigned == -1:
-#         print("Error! Task not assigned")
-#         return None
-#     task.is_executed = False
-#     task.parent_done = True
-#     print(task.is_assigned)
-    
-#     machine.used_once = True
-
-#     machine.use_time += self.total_time(task, machine)
-#     unused_machines = self.get_unused_machines(machines)
-
-#     for mach in unused_machines:
-#         mach.start_use += self.total_time(task, mach)
-
-#     machine.is_available = True
-
-#     task.is_done = True
-
-#     return task, machine, unused_machines
-
-
-
-# # Création du dataset avec 5 machines et 10 tâches
+# Création du dataset avec 5 machines et 10 tâches
 # dataset = Dataset(n_machines=5, n_tasks=10)
 # print(dataset.get_machine_by_id(0))
 # print(dataset.get_task_by_id(2))
 # dataset.plot()
-
-
-
