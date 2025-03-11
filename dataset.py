@@ -8,7 +8,7 @@ from data.constants.machine import Machine
 
 np.random.seed(random.randint(0, 2**12 - 1))  
 
-
+# Paramètres
 cloud_machines_params_range = {
     "bandwidth": (100, 10000), 
     "cpu_cost": (0.1, 10), 
@@ -28,6 +28,7 @@ task_params_range = {
     "data_volume": (1, 5000),
 }
 
+# Fonctions
 def generate_bandwith(n_machines, is_cloud):
     machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
     bandwith = np.random.randint(machines_params_range["bandwidth"][0], machines_params_range["bandwidth"][1], size=(n_machines, n_machines))
@@ -45,7 +46,7 @@ def generer_parents(n_tasks, task_id):
         return []
     if task_id == 1:
         return [] if np.random.rand() < 0.5 else [0]
-    taille = np.random.randint(0, n_tasks-1)  
+    taille = np.random.randint(0, task_id-1)  
     parents = np.random.randint(0, task_id-1, size=taille).tolist()
     return parents
 
@@ -72,28 +73,20 @@ def generate_tasks_graph(n_tasks):
     return tasks
 
 def plot_task_graph(tasks):
-    pass
     G = nx.DiGraph()
-
-
     for task in tasks:
         G.add_node(task.id)
-
-    # Ajouter les arêtes en remplaçant None par 0 (Root) pour qu'il n'y ait pas de doublons
     for task in tasks:
         if task.parents_id:
             for parent in task.parents_id:
-                G.add_edge(parent, task.id)  # Ajout d'arêtes avec le parent_id correct
-
-    # Générer la mise en page avec plus d'espacement
-    pos = nx.spring_layout(G, k=2, seed=42)  # Augmenter k pour espacer les nœuds
+                G.add_edge(parent, task.id) 
+    pos = nx.spring_layout(G, k=3, seed=42)
     nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, edge_color='gray')
-
     plt.title("Graphe des tâches")
     plt.show()
 
 
-
+# Classe
 class Dataset():
     def __init__(self, n_machines, n_tasks, is_cloud=True):
        
