@@ -10,24 +10,12 @@ def f_cost(dataset, solution):
     Returns: total cost of the solution    
     """
     cost = 0
-    for i, task in enumerate(dataset.tasks):
-        for j, machine in enumerate(dataset.machines):
-            if solution[i, j] == 1:
-                cost += machine.exec_cost(task) + machine.comm_cost(task)
+    for task in dataset.tasks:
+        for machine in dataset.machines:
+            if solution[task.id, machine.id] == 1:
+                cost += machine.exec_cost(task) + dataset.bandwidth_cost(task, machine)
     
     return cost
-
-# get start and end time of a task
-def get_end_time(dataset, task, machine):
-    parent = dataset.get_task_by_id(task.parent_id)
-    if task.id == 0:
-        start_time = 0
-    else:
-        if not parent.is_done:
-            return np.inf
-        start_time = max(parent.end_time + task.input_size / parent.is_assigned.bandwidth)
-    end_time = start_time + task.n_instructions / machine.cpu_mips
-    return end_time
 
 def f_makespan(dataset, solution):
     """Makespan target function.
@@ -37,11 +25,10 @@ def f_makespan(dataset, solution):
     Returns: makespan of the solution
     """
     makespan = 0
-    for i, task in enumerate(dataset.tasks):
-        for j, machine in enumerate(dataset.machines):
-            if solution[i, j] == 1:
-                end_time = get_end_time(task, machine)
-                makespan = max(makespan, end_time)
+    for task in dataset.tasks:
+        for machine in dataset.machines:
+            if solution[task.id, machine.id] == 1:
+                makespan = max(makespan, task.end_time)
     return makespan
 
 def check_feasibility(dataset, solution):
@@ -62,6 +49,49 @@ def check_feasibility(dataset, solution):
     #     return False
     return True
 
+def schedule(dataset, solution):
+    """Schedule tasks on machines.
+    Args:
+        dataset: dataset object
+        solution: binary array of shape (n_tasks, n_machines)
+    Returns: schedule: list of tuples (task_id, machine_id, start_time, end_time)
+    """
+    # Check dimensions
+    if solution.shape != (dataset.n_tasks, dataset.n_machines):
+        raise ValueError("Invalid solution shape")
+    # Schedule tasks
+    for task in dataset.tasks:
+        for machine in dataset.machines:
+            if solution[task.id, machine.id] == 1:
+                execute_task(task, machine)
+
+def execute_task(dataset, task, machine):
+    """Assign a task to a machine.
+    Args:
+        task: task object
+        machine: machine object
+    """
+    # assign task to machine
+    task.is_assigned = machine.id
+    # get predecessors
+    predecessors = [dataset.get_task_by_id(id) for id in task.predecessors]
+    # get communication time
+    pred_machines = [p.is_assigned for p in predecessors]
+    bandwidths = np.ndarray([dataset.bandwidth(id, machine.id) for id in pred_machines])
+    data_volumes = np.ndarray([dataset.data_volume(p, task.id) for p in task.predecessors])
+    end_times = np.ndarray([p.end_time for p in predecessors])
+    # get end time of predecessors
+    pred_end = max(end_times + data_volumes / bandwidths)
+    # get start
+    start_time = max(pred_end, machine.end_time)
+    # get end time
+    end_time = start_time + task.n_instructions / machine.cpu_mips
+    # update task and machine end time
+    task.is_done = True # TODO: is this necessary?
+    task.start_time = start_time
+    task.end_time = end_time
+    machine.end_time = end_time
+
 def compute_metrics(dataset, solution):
     """Schedule tasks on machines.
     Args:
@@ -74,6 +104,8 @@ def compute_metrics(dataset, solution):
     # Check feasibility
     if not check_feasibility(dataset, solution):
         return np.inf, np.inf
+    # Schedule tasks
+    schedule(dataset, solution)
     # Compute QoS metrics
     makespan = f_makespan(dataset, solution)
     cost = f_cost(dataset, solution)

@@ -10,6 +10,7 @@ class Machine(object):
         self.start_use = start_use
         self.use_time = use_time
         self.used_once = used_once
+        self.end_time = 0
     
         """
         cpu_cost: float -> CPU cost per hour or per unit
