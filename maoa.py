@@ -51,18 +51,25 @@ def repair_solution(solution, n, p):
     return matrix.flatten()
 
 def update_population(population, archive, mu, moa, mop, n, p):
+    e = 1e-15 # Small value to prevent division by zero
     p_new = np.copy(population)
     for i in range(population.shape[0]):
         leader = random.choice(archive)[:-2]  # Choose leader from archive
-        for row in range(n):
-            if random.random() > moa:
-                chosen_col = np.argmax(leader[row * p:(row + 1) * p])  # Copy leader's column
-                p_new[i, row * p:(row + 1) * p] = 0
-                p_new[i, row * p + chosen_col] = 1
+        for j in range(n * p):
+            r1, r2, r3 = random.random(), random.random(), random.random()
+            if r1 > moa:
+                # Exploration Step
+                if r2 > 0.5:
+                    p_new[i, j] = leader[j] / (mop + e)
+                else:
+                    p_new[i, j] = leader[j] * mop * mu
             else:
-                chosen_col = random.randint(0, p - 1)
-                p_new[i, row * p:(row + 1) * p] = 0
-                p_new[i, row * p + chosen_col] = 1
+                # Exploitation Step
+                if r3 > moa:
+                    if r2 > 0.5:
+                        p_new[i, j] = leader[j] - (mop * mu)
+                    else:
+                        p_new[i, j] = leader[j] + (mop * mu)
         p_new[i, :-2] = repair_solution(p_new[i, :-2], n, p)
         p_new[i, -2:] = target_functions(p_new[i, :-2].reshape(n, p))
     return p_new
