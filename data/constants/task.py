@@ -7,6 +7,8 @@ class Task(object):
         self.n_instructions = n_instructions
         self.is_assigned = is_assigned
         self.is_done = is_done
+        self.start_time = 0
+        self.end_time = 0
 
     """
     parent_id: int -> ID de la tâche parente
