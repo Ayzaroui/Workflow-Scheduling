@@ -51,8 +51,10 @@ def compare_dominance(nsga2_res, moaoa_res):
 
 
 def plot_comparison(nsga2_res, moaoa_res):
+    nsga2_res = nsga2_res[np.argsort(nsga2_res[:, -2])]
     plt.scatter(nsga2_res[:, 0], nsga2_res[:, 1], label='NSGA-II', marker='o', color='blue', alpha=0.7)
     plt.plot(nsga2_res[:, 0], nsga2_res[:, 1], linestyle="dotted", color="blue", alpha=0.7)
+    moaoa_res = moaoa_res[np.argsort(moaoa_res[:, -2])]
     plt.scatter(moaoa_res[:, -2], moaoa_res[:, -1], label='MOAOA', marker='s', color='red', alpha=0.7)
     plt.plot(moaoa_res[:, -2], moaoa_res[:, -1], linestyle="dotted", color="red", alpha=0.7)
 
