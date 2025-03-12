@@ -34,7 +34,7 @@ class WorkflowSchedulingProblem(ElementwiseProblem):
         makespan, cost = compute_metrics(self.problem, solution_matrix)
         out["F"] = np.array([makespan, cost])
 
-def run_nsga2(problem, population_size, generations):
+def run_nsga2(problem, population_size, generations, verbose=True):
     problem = WorkflowSchedulingProblem(problem)
     algorithm = NSGA2(
         pop_size=population_size,
@@ -47,8 +47,8 @@ def run_nsga2(problem, population_size, generations):
                    algorithm,
                    termination=get_termination("n_gen", generations),
                    seed=1,
-                   verbose=True)
-    return res
+                   verbose=verbose)
+    return res.F
 
 def plot_pareto_front(archive):
     archive = archive[np.argsort(archive[:, -2])]
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     dataset = Dataset(n_machines=5, n_tasks=10)
     dataset.plot()
     nsga2_result = run_nsga2(dataset, 50, 100)
-    print(nsga2_result.F)
-    print(f'Archive Size: {len(nsga2_result.F)}')
-    plot_pareto_front(nsga2_result.F)
+    print(nsga2_result)
+    print(f'Archive Size: {len(nsga2_result)}')
+    plot_pareto_front(nsga2_result)
     dataset.plot_schedule()

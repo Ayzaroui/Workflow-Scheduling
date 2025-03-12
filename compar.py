@@ -1,16 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.core.problem import ElementwiseProblem
-from pymoo.optimize import minimize
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.operators.mutation.pm import PM
-from pymoo.termination import get_termination
-from pymoo.operators.sampling.rnd import BinaryRandomSampling
 from data.dataset import Dataset
 from target_metrics import compute_metrics
-from maoa import moaoa
+from maoa import run_moaoa
+from nsga import WorkflowSchedulingProblem, run_nsga2
 
 
 N_TASKS = 50
@@ -21,46 +15,10 @@ RUNS = 10
 
 dataset = Dataset(n_machines=N_MACHINES, n_tasks=N_TASKS)
 
-class WorkflowSchedulingProblem(ElementwiseProblem):
-    def __init__(self):
-        super().__init__(n_var=N_TASKS * N_MACHINES, 
-                         n_obj=2, 
-                         n_constr=0, 
-                         xl=0, 
-                         xu=1)
-
-    def _evaluate(self, x, out, *args, **kwargs):
-        solution_matrix = x.reshape((N_TASKS, N_MACHINES))
-        solution_matrix = np.round(solution_matrix)
-        for i in range(N_TASKS):
-            if np.sum(solution_matrix[i]) != 1:
-                solution_matrix[i] = np.zeros(N_MACHINES)
-                solution_matrix[i, np.random.randint(0, N_MACHINES)] = 1
-        makespan, cost = compute_metrics(dataset, solution_matrix)
-        out["F"] = np.array([makespan, cost])
 
 
-def run_nsga2():
-    problem = WorkflowSchedulingProblem()
-    algorithm = NSGA2(
-        pop_size=POPULATION_SIZE,
-        sampling=BinaryRandomSampling(),
-        crossover=SBX(prob=0.9),
-        mutation=PM(prob=0.1),
-        eliminate_duplicates=True
-    )
-    res = minimize(problem,
-                   algorithm,
-                   termination=get_termination("n_gen", GENERATIONS),
-                   seed=None,
-                   verbose=False)
-    return res.F
-
-
-def run_moaoa():
-    moaoa_res = moaoa(size=POPULATION_SIZE, n=N_TASKS, p=N_MACHINES, iterations=GENERATIONS, verbose=False)
-
-    moaoa_res = np.asarray(moaoa_res)
+def check_moaoa(archive):
+    moaoa_res = np.asarray(archive)
 
     if moaoa_res.shape[1] < 2:
         raise ValueError(f"MOAOA ne retourne pas assez de colonnes, reçu: {moaoa_res.shape}")
@@ -112,8 +70,9 @@ if __name__ == '__main__':
     for run in range(RUNS):
         print(f"Run {run + 1}/{RUNS}")
         
-        nsga2_result = run_nsga2()
-        moaoa_result = run_moaoa()
+        nsga2_result = run_nsga2(dataset, POPULATION_SIZE, GENERATIONS)
+        moaoa_result = run_moaoa(problem=dataset, size=POPULATION_SIZE, n=N_TASKS, p=N_MACHINES, iterations=GENERATIONS)
+        moaoa_result = check_moaoa(moaoa_result)
 
         dom_moaoa, comparisons = compare_dominance(nsga2_result, moaoa_result)
         moaoa_wins += dom_moaoa
