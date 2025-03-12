@@ -71,11 +71,19 @@ def repair_solution(solution, n, p):
     # Ensure each row has exactly one 1.
     matrix = solution.reshape(n, p)
     for row in range(n):
+        # sigmoid function to enforce binary values
+        matrix[row] = np.round(1 / (1 + np.exp(-matrix[row])))
         if np.sum(matrix[row]) != 1:
+            # Randomly choose a 1 to keep
+            ones = np.where(matrix[row] == 1)[0]
+            if len(ones) > 1:
+                idx = random.choice(ones)
+            else:
+                idx = random.randint(0, p - 1)
             # Reset row
             matrix[row] = 0 
-            # Place a single 1
-            matrix[row, random.randint(0, p - 1)] = 1 
+            # Keep chosen 1
+            matrix[row, idx] = 1
     return matrix.flatten()
 
 def update_population(population, archive, mu, moa, mop, n, p):
