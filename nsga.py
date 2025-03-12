@@ -9,7 +9,7 @@ from pymoo.operators.mutation.pm import PM
 from pymoo.termination import get_termination
 from pymoo.operators.sampling.rnd import BinaryRandomSampling
 
-from data.dataset import Dataset
+from data.randomDataset import RandomDataset
 from target_metrics import compute_metrics
 
 
@@ -60,7 +60,7 @@ def plot_pareto_front(archive):
     plt.show()
 
 if __name__ == '__main__':
-    dataset = Dataset(n_machines=5, n_tasks=10)
+    dataset = RandomDataset(n_machines=5, n_tasks=10)
     dataset.plot()
     nsga2_result = run_nsga2(dataset, 50, 100)
     print(nsga2_result)

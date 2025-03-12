@@ -2,7 +2,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data.dataset import Dataset
+from data.randomDataset import RandomDataset
 from target_metrics import compute_metrics
 
 
@@ -51,7 +51,9 @@ def non_dominated_sort(population):
             archive.append(sol)
     return np.array(archive)
 
-def initialize_population(size, n, p, problem):
+def initialize_population(size, problem):
+    n = problem.n_tasks
+    p = problem.n_machines
     # Extra columns for objectives
     population = np.zeros((size, n * p + 2))  
     for i in range(size):
@@ -82,7 +84,9 @@ def repair_solution(solution, n, p):
             matrix[row, idx] = 1
     return matrix.flatten()
 
-def update_population(population, archive, mu, moa, mop, n, p, problem):
+def update_population(population, archive, mu, moa, mop, problem):
+    n = problem.n_tasks
+    p = problem.n_machines
     # Small value to prevent division by zero
     e = 1e-15 
     p_new = np.copy(population)
@@ -108,15 +112,15 @@ def update_population(population, archive, mu, moa, mop, n, p, problem):
         p_new[i, -2:] = target_functions(problem, p_new[i, :-2].reshape(n, p))
     return p_new
 
-def run_moaoa(problem, size=10, n=5, p=5, iterations=50, alpha=0.5, mu=5, verbose=True):
-    population = initialize_population(size, n, p, problem)
+def run_moaoa(problem, size=10, iterations=50, alpha=0.5, mu=5, verbose=True):
+    population = initialize_population(size, problem)
     archive = non_dominated_sort(population)
     for count in range(iterations):
         if verbose:
             print(f'Iteration {count}, Archive Size: {len(archive)}')
         moa = 0.2 + count * ((1 - 0.2) / iterations)
         mop = 1 - ((count ** (1 / alpha)) / (iterations ** (1 / alpha)))
-        population = update_population(population, archive, mu, moa, mop, n, p, problem)
+        population = update_population(population, archive, mu, moa, mop, problem)
         # Merge and sort solutions
         archive = non_dominated_sort(np.vstack((archive, population))) 
         if len(archive) > size:
@@ -134,9 +138,9 @@ def plot_pareto_front(archive):
     plt.show()
 
 if __name__ == '__main__':
-    dataset = Dataset(n_machines=5, n_tasks=10)
+    dataset = RandomDataset(n_machines=5, n_tasks=10)
     dataset.plot()
-    archive = run_moaoa(problem=dataset, n=10, p=5, iterations=100, verbose=True)
+    archive = run_moaoa(problem=dataset, iterations=100, verbose=True)
     print(archive)
     print(f'Archive Size: {len(archive)}')
     plot_pareto_front(archive)

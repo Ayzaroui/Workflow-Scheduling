@@ -1,19 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from data.dataset import Dataset
 from maoa import run_moaoa
 from nsga import run_nsga2
 
 
-N_TASKS = 50
-N_MACHINES = 5
+dataset = Dataset(
+        # workflow_path=os.path.join("data", "CyberShake_100.xml"),
+        # workflow_path=os.path.join("data", "Epigenomics_100.xml"),
+        # workflow_path=os.path.join("data", "Inspiral_100.xml"),
+        workflow_path=os.path.join("data", "Montage_100.xml"),
+        environment_path=os.path.join("data", "task120.xlsx")
+)
+
 POPULATION_SIZE = 50
 GENERATIONS = 100
 RUNS = 10
-
-dataset = Dataset(n_machines=N_MACHINES, n_tasks=N_TASKS)
-
 
 
 def check_moaoa(archive):
@@ -72,7 +76,7 @@ if __name__ == '__main__':
         print(f"Run {run + 1}/{RUNS}")
         
         nsga2_result = run_nsga2(dataset, POPULATION_SIZE, GENERATIONS)
-        moaoa_result = run_moaoa(problem=dataset, size=POPULATION_SIZE, n=N_TASKS, p=N_MACHINES, iterations=GENERATIONS)
+        moaoa_result = run_moaoa(problem=dataset, size=POPULATION_SIZE, iterations=GENERATIONS)
         moaoa_result = check_moaoa(moaoa_result)
 
         dom_moaoa, comparisons = compare_dominance(nsga2_result, moaoa_result)
