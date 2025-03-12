@@ -72,7 +72,5 @@ def plot_comparison(nsga2_res, moaoa_res):
 if __name__ == '__main__':
     nsga2_result = run_nsga2()
     moaoa_result = run_moaoa()
-    for task in dataset.tasks:
-        print(task)
     plot_comparison(nsga2_result, moaoa_result)
     
