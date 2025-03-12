@@ -65,6 +65,8 @@ def schedule(dataset, solution):
     Returns:
         0
     """
+    # Reset schedule
+    dataset.reset_schedule()
     # Schedule tasks
     for task in dataset.tasks:
         for machine in dataset.machines:
@@ -140,7 +142,7 @@ def compute_metrics(dataset, solution):
     
     # Check dimensions
     if solution.shape != (dataset.n_tasks, dataset.n_machines):
-        raise ValueError("Invalid solution shape")
+        raise ValueError(f"Invalid solution shape: expected {(dataset.n_tasks, dataset.n_machines)} but got {solution.shape}")
     
     # Check feasibility
     if not check_constraint(solution):

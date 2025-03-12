@@ -111,6 +111,14 @@ class Dataset():
     
     def get_machine_by_id(self, machine_id):
         return self.machines[machine_id]
+        
+    def reset_schedule(self):
+        for task in self.tasks:
+            task.is_assigned = None
+            task.start_time = None
+            task.end_time = None
+        for machine in self.machines:
+            machine.end_time = 0
 
     def plot_schedule(self):
         _, gnt = plt.subplots()

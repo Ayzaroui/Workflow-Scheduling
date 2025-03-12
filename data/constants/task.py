@@ -1,6 +1,6 @@
 class Task(object):
 
-    def __init__(self, id, parents_id, n_instructions, is_assigned=-1):
+    def __init__(self, id, parents_id, n_instructions):
 
         """
         id: int -> Identifiant unique de la tâche.
@@ -11,12 +11,14 @@ class Task(object):
         end_time: float -> Temps de fin d'exécution de la tâche (initialisé à 0).
         """
         
+        # Constants
         self.id = id
         self.parents_id = parents_id
         self.n_instructions = n_instructions
-        self.is_assigned = is_assigned
-        self.start_time = 0
-        self.end_time = 0
+        # Variables
+        self.is_assigned = None
+        self.start_time = None
+        self.end_time = None
 
     def __str__(self):
         return f"Task {self.id}:\n"\
