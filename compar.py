@@ -2,9 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data.dataset import Dataset
-from target_metrics import compute_metrics
 from maoa import run_moaoa
-from nsga import WorkflowSchedulingProblem, run_nsga2
+from nsga import run_nsga2
 
 
 N_TASKS = 50
