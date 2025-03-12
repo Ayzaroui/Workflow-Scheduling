@@ -1,25 +1,46 @@
-import numpy as np
 import random
-import os
+import numpy as np
+import matplotlib.pyplot as plt
 
-from dataset import Dataset
+from data.dataset import Dataset
 from target_metrics import compute_metrics
 
 dataset = Dataset(n_machines=5, n_tasks=10)
 
 def target_functions(solution):
     """
-    Define multiple objective functions. Replace these with actual objectives.
+    Calcule les valeurs des fonctions objectif.
+    Args:
+        dataset : objet dataset
+            Contient les informations sur les tâches et les machines.
+        solution : tableau binaire de forme (n_tasks, n_machines)
+            Matrice binaire indiquant l'affectation des tâches aux machines.
+    Returns:
+        Tableau des valeurs des fonctions objectif (makespan, coût).
     """
     makespan, cost = compute_metrics(dataset, solution)
     return np.array([makespan, cost])
 
 def dominates(sol1, sol2):
-    """Check if sol1 dominates sol2."""
+    """Vérifie si sol1 domine sol2.
+    Args:
+        sol1 : np.array
+            Valeurs des fonctions objectif pour la première solution.
+        sol2 : np.array
+            Valeurs des fonctions objectif pour la deuxième solution.
+    Returns:
+        True si sol1 domine sol2, sinon False.
+    """
     return np.all(sol1 <= sol2) and np.any(sol1 < sol2)
 
 def non_dominated_sort(population):
-    """Find non-dominated solutions."""
+    """Trouve les solutions non dominées.
+    Args:
+        population : list de tuples (solution, valeurs_objectif)
+            Une liste où chaque élément contient une solution et ses valeurs de fonction objectif.
+    Returns:
+        Tableau contenant les solutions non dominées.
+    """
     archive = []
     for sol in population:
         dominated = False
@@ -32,29 +53,35 @@ def non_dominated_sort(population):
     return np.array(archive)
 
 def initialize_population(size, n, p):
-    population = np.zeros((size, n * p + 2))  # Extra columns for objectives
+    # Extra columns for objectives
+    population = np.zeros((size, n * p + 2))  
     for i in range(size):
         matrix = np.zeros((n, p))
         for row in range(n):
-            matrix[row, random.randint(0, p - 1)] = 1  # Ensure one 1 per row
+            # Ensure one 1 per row
+            matrix[row, random.randint(0, p - 1)] = 1  
         population[i, :-2] = matrix.flatten()
         population[i, -2:] = target_functions(matrix)
     return population
 
 def repair_solution(solution, n, p):
-    """Ensure each row has exactly one 1."""
+    # Ensure each row has exactly one 1.
     matrix = solution.reshape(n, p)
     for row in range(n):
         if np.sum(matrix[row]) != 1:
-            matrix[row] = 0  # Reset row
-            matrix[row, random.randint(0, p - 1)] = 1  # Place a single 1
+            # Reset row
+            matrix[row] = 0 
+            # Place a single 1
+            matrix[row, random.randint(0, p - 1)] = 1 
     return matrix.flatten()
 
 def update_population(population, archive, mu, moa, mop, n, p):
-    e = 1e-15 # Small value to prevent division by zero
+    # Small value to prevent division by zero
+    e = 1e-15 
     p_new = np.copy(population)
     for i in range(population.shape[0]):
-        leader = random.choice(archive)[:-2]  # Choose leader from archive
+        # Choose leader from archive
+        leader = random.choice(archive)[:-2]  
         for j in range(n * p):
             r1, r2, r3 = random.random(), random.random(), random.random()
             if r1 > moa:
@@ -65,10 +92,11 @@ def update_population(population, archive, mu, moa, mop, n, p):
                     p_new[i, j] = leader[j] * mop * mu
             else:
                 # Exploitation Step
-                if r3 > 0.5:
-                    p_new[i, j] = leader[j] - (mop * mu)
-                else:
-                    p_new[i, j] = leader[j] + (mop * mu)
+                if r3 > moa:
+                    if r2 > 0.5:
+                        p_new[i, j] = leader[j] - (mop * mu)
+                    else:
+                        p_new[i, j] = leader[j] + (mop * mu)
         p_new[i, :-2] = repair_solution(p_new[i, :-2], n, p)
         p_new[i, -2:] = target_functions(p_new[i, :-2].reshape(n, p))
     return p_new
@@ -82,14 +110,16 @@ def moaoa(size=10, n=5, p=5, iterations=50, alpha=0.5, mu=5, verbose=True):
         moa = 0.2 + count * ((1 - 0.2) / iterations)
         mop = 1 - ((count ** (1 / alpha)) / (iterations ** (1 / alpha)))
         population = update_population(population, archive, mu, moa, mop, n, p)
-        archive = non_dominated_sort(np.vstack((archive, population)))  # Merge and sort solutions
+        # Merge and sort solutions
+        archive = non_dominated_sort(np.vstack((archive, population))) 
         if len(archive) > size:
-            archive = archive[:size]  # Keep archive size manageable
+            # Keep archive size manageable
+            archive = archive[:size]  
     return archive
 
 def plot_pareto_front(archive):
-    import matplotlib.pyplot as plt
     plt.scatter(archive[:, -2], archive[:, -1])
+    plt.plot(archive[:, -2], archive[:, -1], linestyle="dotted", color="blue", alpha=0.7)
     plt.xlabel('Makespan')
     plt.ylabel('Cost')
     plt.title('Pareto Front')
