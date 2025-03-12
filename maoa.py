@@ -5,23 +5,19 @@ import matplotlib.pyplot as plt
 from data.dataset import Dataset
 from target_metrics import compute_metrics
 
-N_TASKS = 50
-N_MACHINES = 5
 
-dataset = Dataset(n_machines=N_MACHINES, n_tasks=N_TASKS)
-
-def target_functions(solution):
+def target_functions(problem, solution):
     """
     Calcule les valeurs des fonctions objectif.
     Args:
-        dataset : objet dataset
+        problem : objet dataset
             Contient les informations sur les tâches et les machines.
         solution : tableau binaire de forme (n_tasks, n_machines)
             Matrice binaire indiquant l'affectation des tâches aux machines.
     Returns:
         Tableau des valeurs des fonctions objectif (makespan, coût).
     """
-    makespan, cost = compute_metrics(dataset, solution)
+    makespan, cost = compute_metrics(problem, solution)
     return np.array([makespan, cost])
 
 def dominates(sol1, sol2):
@@ -55,7 +51,7 @@ def non_dominated_sort(population):
             archive.append(sol)
     return np.array(archive)
 
-def initialize_population(size, n, p):
+def initialize_population(size, n, p, problem):
     # Extra columns for objectives
     population = np.zeros((size, n * p + 2))  
     for i in range(size):
@@ -64,7 +60,7 @@ def initialize_population(size, n, p):
             # Ensure one 1 per row
             matrix[row, random.randint(0, p - 1)] = 1  
         population[i, :-2] = matrix.flatten()
-        population[i, -2:] = target_functions(matrix)
+        population[i, -2:] = target_functions(problem, matrix)
     return population
 
 def repair_solution(solution, n, p):
@@ -86,7 +82,7 @@ def repair_solution(solution, n, p):
             matrix[row, idx] = 1
     return matrix.flatten()
 
-def update_population(population, archive, mu, moa, mop, n, p):
+def update_population(population, archive, mu, moa, mop, n, p, problem):
     # Small value to prevent division by zero
     e = 1e-15 
     p_new = np.copy(population)
@@ -109,18 +105,18 @@ def update_population(population, archive, mu, moa, mop, n, p):
                     else:
                         p_new[i, j] = leader[j] + (mop * mu)
         p_new[i, :-2] = repair_solution(p_new[i, :-2], n, p)
-        p_new[i, -2:] = target_functions(p_new[i, :-2].reshape(n, p))
+        p_new[i, -2:] = target_functions(problem, p_new[i, :-2].reshape(n, p))
     return p_new
 
-def moaoa(size=10, n=5, p=5, iterations=50, alpha=0.5, mu=5, verbose=True):
-    population = initialize_population(size, n, p)
+def run_moaoa(problem, size=10, n=5, p=5, iterations=50, alpha=0.5, mu=5, verbose=True):
+    population = initialize_population(size, n, p, problem)
     archive = non_dominated_sort(population)
     for count in range(iterations):
         if verbose:
             print(f'Iteration {count}, Archive Size: {len(archive)}')
         moa = 0.2 + count * ((1 - 0.2) / iterations)
         mop = 1 - ((count ** (1 / alpha)) / (iterations ** (1 / alpha)))
-        population = update_population(population, archive, mu, moa, mop, n, p)
+        population = update_population(population, archive, mu, moa, mop, n, p, problem)
         # Merge and sort solutions
         archive = non_dominated_sort(np.vstack((archive, population))) 
         if len(archive) > size:
@@ -129,6 +125,7 @@ def moaoa(size=10, n=5, p=5, iterations=50, alpha=0.5, mu=5, verbose=True):
     return archive
 
 def plot_pareto_front(archive):
+    archive = archive[np.argsort(archive[:, -2])]
     plt.scatter(archive[:, -2], archive[:, -1])
     plt.plot(archive[:, -2], archive[:, -1], linestyle="dotted", color="blue", alpha=0.7)
     plt.xlabel('Makespan')
@@ -137,7 +134,10 @@ def plot_pareto_front(archive):
     plt.show()
 
 if __name__ == '__main__':
-    archive = moaoa(n=N_TASKS, p=N_MACHINES, iterations=100, verbose=False)
+    dataset = Dataset(n_machines=5, n_tasks=10)
+    dataset.plot()
+    archive = run_moaoa(problem=dataset, n=10, p=5, iterations=100, verbose=True)
     print(archive)
     print(f'Archive Size: {len(archive)}')
     plot_pareto_front(archive)
+    dataset.plot_schedule()

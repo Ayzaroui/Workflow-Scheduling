@@ -112,6 +112,22 @@ class Dataset():
     def get_machine_by_id(self, machine_id):
         return self.machines[machine_id]
 
+    def plot_schedule(self):
+        _, gnt = plt.subplots()
+        gnt.set_xlabel('Time')
+        gnt.set_yticks([i for i in range(self.n_machines)])
+        gnt.set_yticklabels([f"Machine {i}" for i in range(self.n_machines)])
+        # color matches the task id
+        cmap = plt.get_cmap('tab20')
+        colors = [cmap(i) for i in range(self.n_tasks)]
+        for task in self.tasks:
+            machine = self.get_machine_by_id(task.is_assigned)
+            gnt.broken_barh([(task.start_time, task.end_time - task.start_time)], (machine.id - 0.4, 0.8), facecolors=colors[task.id])
+        # add legend
+        handles = [plt.Rectangle((0,0),1,1, color=colors[i]) for i in range(self.n_tasks)]
+        plt.legend(handles, [f'Task {i}' for i in range(self.n_tasks)], title='Tasks')
+        plt.title('Schedule')
+        plt.show()
 
 if __name__ == '__main__':
     # Création du dataset avec 5 machines et 10 tâches
