@@ -60,7 +60,9 @@ def run_moaoa():
 
 def plot_comparison(nsga2_res, moaoa_res):
     plt.scatter(nsga2_res.F[:, 0], nsga2_res.F[:, 1], label='NSGA-II', marker='o', color='blue')
+    plt.plot(nsga2_res.F[:, 0], nsga2_res.F[:, 1], linestyle="dotted", color="blue", alpha=0.7)
     plt.scatter(moaoa_res[:, -2], moaoa_res[:, -1], label='MOAOA', marker='s', color='red')
+    plt.plot(moaoa_res[:, -2], moaoa_res[:, -1], linestyle="dotted", color="red", alpha=0.7)
     plt.xlabel('Makespan')
     plt.ylabel('Cost')
     plt.title('Comparison: NSGA-II vs MOAOA')
@@ -70,4 +72,7 @@ def plot_comparison(nsga2_res, moaoa_res):
 if __name__ == '__main__':
     nsga2_result = run_nsga2()
     moaoa_result = run_moaoa()
+    for task in dataset.tasks:
+        print(task)
     plot_comparison(nsga2_result, moaoa_result)
+    
