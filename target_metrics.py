@@ -68,10 +68,16 @@ def schedule(dataset, solution):
     # Reset schedule
     dataset.reset_schedule()
     # Schedule tasks
-    for task in dataset.tasks:
-        for machine in dataset.machines:
-            if solution[task.id, machine.id] == 1:
-                execute_task(dataset, task, machine)
+    ordered_tasks = sorted(dataset.tasks, key=lambda x: len(x.parents_id))
+    if len(ordered_tasks[0].parents_id) > 0:
+        raise ValueError("Couldn't find a task without parents")
+    while len(ordered_tasks)>0:
+        # loop through the list and remove the tasks we managed to execute
+        for task in ordered_tasks:
+            for machine in dataset.machines:
+                if solution[task.id, machine.id] == 1:
+                    if execute_task(dataset, task, machine) == 0:
+                        ordered_tasks.remove(task)
     return 0
 
 def execute_task(dataset, task, machine):
@@ -91,6 +97,8 @@ def execute_task(dataset, task, machine):
 
         predecessors = [dataset.get_task_by_id(id) for id in task.parents_id]
         pred_machines = [p.is_assigned for p in predecessors]
+        if None in pred_machines:
+            return -1
         end_times = [p.end_time for p in predecessors]
 
         bandwidths = [dataset.bandwidth[id, machine.id] for id in pred_machines]
@@ -109,13 +117,14 @@ def execute_task(dataset, task, machine):
         start_time = max(pred_end, machine.end_time)
         return start_time
 
+    # get start and end time
+    start_time = get_start_time(dataset, task, machine)
+    if start_time == -1:
+        return -1
+    end_time = start_time + task.n_instructions / machine.cpu_mips
 
     # assign task to machine
     task.is_assigned = machine.id
-
-    # get start and end time
-    start_time = get_start_time(dataset, task, machine)
-    end_time = start_time + task.n_instructions / machine.cpu_mips
     
     # update task and machine end time
     task.start_time = start_time
