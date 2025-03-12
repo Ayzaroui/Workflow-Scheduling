@@ -113,8 +113,9 @@ class Dataset():
         return self.machines[machine_id]
 
 
-# Création du dataset avec 5 machines et 10 tâches
-# dataset = Dataset(n_machines=5, n_tasks=10)
-# print(dataset.get_machine_by_id(0))
-# print(dataset.get_task_by_id(2))
-# dataset.plot()
+if __name__ == '__main__':
+    # Création du dataset avec 5 machines et 10 tâches
+    dataset = Dataset(n_machines=5, n_tasks=10)
+    print(dataset.get_machine_by_id(0))
+    print(dataset.get_task_by_id(2))
+    dataset.plot()
