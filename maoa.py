@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 from data.dataset import Dataset
 from target_metrics import compute_metrics
 
-dataset = Dataset(n_machines=5, n_tasks=10)
+N_TASKS = 50
+N_MACHINES = 5
+
+dataset = Dataset(n_machines=N_MACHINES, n_tasks=N_TASKS)
 
 def target_functions(solution):
     """
@@ -126,7 +129,7 @@ def plot_pareto_front(archive):
     plt.show()
 
 if __name__ == '__main__':
-    archive = moaoa(n=10, p=5, iterations=100, verbose=False)
+    archive = moaoa(n=N_TASKS, p=N_MACHINES, iterations=100, verbose=False)
     print(archive)
     print(f'Archive Size: {len(archive)}')
     plot_pareto_front(archive)
