@@ -48,7 +48,7 @@ def run_nsga2(problem, population_size, generations, verbose=True):
                    termination=get_termination("n_gen", generations),
                    seed=1,
                    verbose=verbose)
-    return res.F
+    return res.X, res.F
 
 def plot_pareto_front(archive):
     archive = archive[np.argsort(archive[:, -2])]

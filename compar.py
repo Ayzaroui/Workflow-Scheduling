@@ -75,7 +75,7 @@ if __name__ == '__main__':
     for run in range(RUNS):
         print(f"Run {run + 1}/{RUNS}")
         
-        nsga2_result = run_nsga2(dataset, POPULATION_SIZE, GENERATIONS)
+        _, nsga2_result = run_nsga2(dataset, POPULATION_SIZE, GENERATIONS)
         moaoa_result = run_moaoa(problem=dataset, size=POPULATION_SIZE, iterations=GENERATIONS)
         moaoa_result = check_moaoa(moaoa_result)
 
