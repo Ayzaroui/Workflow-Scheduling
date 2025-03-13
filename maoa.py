@@ -44,11 +44,15 @@ def non_dominated_sort(population):
     for sol in population:
         dominated = False
         for arch_sol in archive:
-            if dominates(arch_sol[-1], sol[-1]):
+            if dominates(arch_sol[-2:], sol[-2:]):
                 dominated = True
                 break
         if not dominated:
             archive.append(sol)
+        for arch_sol in archive: 
+            # Remove solutions dominated by the newly added solution
+            if dominates(sol[-2:], arch_sol[-2:]):
+                archive = [a for a in archive if not np.array_equal(a, arch_sol)]
     return np.array(archive)
 
 def initialize_population(size, problem):
