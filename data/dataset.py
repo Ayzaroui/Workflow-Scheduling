@@ -71,20 +71,11 @@ def plot_task_graph(tasks):
 def convert_id(id):
     return int(id.split("ID")[1])
 
-def extract_parent_task(file):
-    task_id = file.split("ID")
-    if len(task_id) == 1:
-        # no ID in the file name
-        return None
-    task_id = task_id[1]
-    for char in task_id:
-        # only keep the numbers
-        if not char.isdigit():
-            task_id = task_id.split(char)[0]
-            break
-    # convert to int
-    task_id = int(task_id)
-    return task_id
+def extract_parent_task(file, mapping):
+    for key, value in mapping.items():
+        if key == file:
+            return value
+    return None
 
 #####################################################
 # Classe
@@ -136,10 +127,18 @@ class Dataset():
         self.data_volume = np.zeros((self.n_tasks, self.n_tasks))
 
         # Data volume
+        # find which task outputs which file
+        mapping = {}
+        for job in root.findall("pegasus:job", namespace):
+            for uses in job.findall("pegasus:uses", namespace):
+                if uses.get("link") == "output":
+                    task_id = convert_id(job.get("id"))
+                    mapping[uses.get("file")] = task_id
+        # find the data volume between tasks
         for job in root.findall("pegasus:job", namespace):
             for uses in job.findall("pegasus:uses", namespace):
                 if uses.get("link") == "input":
-                    parent_id = extract_parent_task(uses.get("file"))
+                    parent_id = extract_parent_task(uses.get("file"), mapping)
                     if parent_id is None:
                         continue
                     child_id = convert_id(job.get("id"))
@@ -199,7 +198,6 @@ class Dataset():
 # Main
 #####################################################
 if __name__ == '__main__':
-    # Création du dataset avec 5 machines et 10 tâches
     dataset = Dataset(
         workflow_path="Montage_100.xml",
         environment_path="task120.xlsx"
