@@ -84,7 +84,38 @@ def repair_solution(solution, n, p):
             matrix[row, idx] = 1
     return matrix.flatten()
 
-def update_population(population, archive, mu, moa, mop, problem):
+def compute_grid(solutions, num_bins=10):
+    # use np.histogram to compute the grid for each objective
+    grid = [list(np.histogram(solutions[:, i], bins=num_bins)[1]) for i in range(solutions.shape[1])]
+    return np.array(grid)
+
+def count_in_grid(solutions, grid):
+    # count the number of solutions in each grid cell
+    grid_counts = np.zeros([len(axis) - 1 for axis in grid])
+    grid_indices = []
+    for solution in solutions:
+        idx = [np.digitize([solution[i]], grid[i])[0]-1 for i in range(solutions.shape[1])]
+        # handle solutions on the right edge of the grid
+        idx = [int(min(i, len(axis)-2)) for i, axis in zip(idx, grid)]
+        grid_counts[tuple(idx)] += 1
+        grid_indices.append(idx)
+    return grid_indices, grid_counts
+
+def leader_selection(archive, grid, C=2):
+    indices, hypercube_counts = count_in_grid(archive[:, -2:], grid)
+    # Select hypercube (lower population -> higher probability)
+    probabilities = np.array([C/count if count>0 else 0 for count in hypercube_counts.flatten()])
+    probabilities /= np.sum(probabilities)
+    hypercude_idx = np.random.choice(len(probabilities), p=probabilities)
+    hypercude_idx = np.unravel_index(hypercude_idx, hypercube_counts.shape) # convert to 2D index
+    hypercude_idx = [int(i) for i in hypercude_idx] # convert to integers
+    # Select a random solution from the chosen hypercube
+    solutions_in_hypercube = [sol for i, sol in enumerate(archive) if indices[i] == hypercude_idx]
+    sol_idx = np.random.choice(len(solutions_in_hypercube))
+
+    return solutions_in_hypercube[sol_idx]
+
+def update_population(population, archive, grid, mu, moa, mop, problem):
     n = problem.n_tasks
     p = problem.n_machines
     # Small value to prevent division by zero
@@ -92,7 +123,7 @@ def update_population(population, archive, mu, moa, mop, problem):
     p_new = np.copy(population)
     for i in range(population.shape[0]):
         # Choose leader from archive
-        leader = random.choice(archive)[:-2]  
+        leader = leader_selection(archive, grid)
         for j in range(n * p):
             r1, r2, r3 = random.random(), random.random(), random.random()
             if r1 > moa:
@@ -115,17 +146,23 @@ def update_population(population, archive, mu, moa, mop, problem):
 def run_moaoa(problem, size=10, iterations=50, alpha=0.5, mu=5, verbose=True):
     population = initialize_population(size, problem)
     archive = non_dominated_sort(population)
+    grid = compute_grid(archive[:, -2:], num_bins=10)
     for count in range(iterations):
         if verbose:
-            print(f'Iteration {count}, Archive Size: {len(archive)}')
+            print(f"Iteration {count},  best cost: {archive[:, -1].min()}, best makespan: {archive[:, -2].min()}, Archive Size: {len(archive)}")
         moa = 0.2 + count * ((1 - 0.2) / iterations)
         mop = 1 - ((count ** (1 / alpha)) / (iterations ** (1 / alpha)))
-        population = update_population(population, archive, mu, moa, mop, problem)
+        population = update_population(population, archive, grid, mu, moa, mop, problem)
         # Merge and sort solutions
         archive = non_dominated_sort(np.vstack((archive, population))) 
+        # If the archive is compLeted
         if len(archive) > size:
             # Keep archive size manageable
             archive = archive[:size]  
+        # If any of the newLy added answers to the archive is pLaced outside of the hypercubes
+        if np.any([np.any(sol[-2:] < grid.min(axis=1)) or np.any(sol[-2:] >= grid.max(axis=1)) for sol in archive]):
+            # Update the grids
+            grid = compute_grid(archive[:, -2:], num_bins=10)
     return archive
 
 def plot_pareto_front(archive):
