@@ -147,10 +147,10 @@ def update_population(population, archive, grid, mu, moa, mop, problem):
         p_new[i, -2:] = target_functions(problem, p_new[i, :-2].reshape(n, p))
     return p_new
 
-def run_moaoa(problem, size=10, iterations=50, alpha=0.5, mu=5, verbose=True):
+def run_moaoa(problem, size=10, iterations=50, alpha=0.5, mu=5, n_bins=10, verbose=True):
     population = initialize_population(size, problem)
     archive = non_dominated_sort(population)
-    grid = compute_grid(archive[:, -2:], num_bins=10)
+    grid = compute_grid(archive[:, -2:], n_bins)
     for count in range(iterations):
         if verbose:
             print(f"Iteration {count},  best cost: {archive[:, -1].min()}, best makespan: {archive[:, -2].min()}, Archive Size: {len(archive)}")
@@ -166,7 +166,7 @@ def run_moaoa(problem, size=10, iterations=50, alpha=0.5, mu=5, verbose=True):
         # If any of the newLy added answers to the archive is pLaced outside of the hypercubes
         if np.any([np.any(sol[-2:] < grid.min(axis=1)) or np.any(sol[-2:] >= grid.max(axis=1)) for sol in archive]):
             # Update the grids
-            grid = compute_grid(archive[:, -2:], num_bins=10)
+            grid = compute_grid(archive[:, -2:], n_bins)
     return archive
 
 def plot_pareto_front(archive):
