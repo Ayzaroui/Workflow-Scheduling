@@ -4,13 +4,15 @@ import matplotlib.pyplot as plt
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.optimize import minimize
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.operators.mutation.pm import PM
+from pymoo.operators.crossover.pntx import TwoPointCrossover
+from pymoo.operators.mutation.bitflip import BitflipMutation
 from pymoo.termination import get_termination
 from pymoo.operators.sampling.rnd import BinaryRandomSampling
+from pymoo.core.repair import Repair
 
 from data.randomDataset import RandomDataset
 from target_metrics import compute_metrics
+from maoa import repair_solution
 
 
 class WorkflowSchedulingProblem(ElementwiseProblem):
@@ -26,25 +28,33 @@ class WorkflowSchedulingProblem(ElementwiseProblem):
                          xu=1)
 
     def _evaluate(self, x, out, *args, **kwargs):
-        solution_matrix = x.reshape((self.n_tasks, self.n_machines))
-        solution_matrix = np.round(solution_matrix)
-        for i in range(self.n_tasks):
-            if np.sum(solution_matrix[i]) != 1:
-                solution_matrix[i] = np.zeros(self.n_machines)
-                solution_matrix[i, np.random.randint(0, self.n_machines)] = 1
+        # x is a array of boolean values, we need to convert it to a binary matrix
+        solution_matrix = x.reshape((self.n_tasks, self.n_machines)).astype(int)
         makespan, cost = compute_metrics(self.problem, solution_matrix)
         # objectvive values: makespan and cost
         out["F"] = np.array([makespan, cost])
         # equality constraint: each task is assigned to exactly one machine
         out["H"] = np.sum(np.sum(solution_matrix, axis=1) - 1)
 
+class OneMachinePerTask(Repair):
+    def _do(self, problem, population, **kwargs):
+        for i in range(population.shape[0]):
+            max_idx = problem.n_tasks * problem.n_machines
+            x = population[i, :max_idx].astype(int)
+            population[i, :max_idx] = repair_solution(x, problem.n_tasks, problem.n_machines).astype(bool)
+        return population
+
 def run_nsga2(problem, population_size, generations, verbose=True):
     problem = WorkflowSchedulingProblem(problem)
+    X = np.zeros((problem.n_tasks, problem.n_machines))
+    for i in range(problem.n_tasks):
+        X[i, np.random.randint(0, problem.n_machines)] = 1
     algorithm = NSGA2(
         pop_size=population_size,
         sampling=BinaryRandomSampling(),
-        crossover=SBX(prob=0.9),
-        mutation=PM(prob=0.1),
+        crossover=TwoPointCrossover(),
+        mutation=BitflipMutation(),
+        repair=OneMachinePerTask(),
         eliminate_duplicates=True
     )
     res = minimize(problem,
@@ -66,8 +76,9 @@ def plot_pareto_front(archive):
 if __name__ == '__main__':
     dataset = RandomDataset(n_machines=5, n_tasks=10)
     dataset.plot()
-    nsga2_result = run_nsga2(dataset, 50, 100)
+    poppulation, nsga2_result = run_nsga2(dataset, 50, 100)
     print(nsga2_result)
     print(f'Archive Size: {len(nsga2_result)}')
+    compute_metrics(dataset, poppulation[0].reshape((dataset.n_tasks, dataset.n_machines)))
     plot_pareto_front(nsga2_result)
     dataset.plot_schedule()
