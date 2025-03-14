@@ -20,7 +20,8 @@ class WorkflowSchedulingProblem(ElementwiseProblem):
         self.n_machines = problem.n_machines
         super().__init__(n_var=self.n_tasks * self.n_machines, 
                          n_obj=2, 
-                         n_constr=0, 
+                         n_ieq_constr=0,
+                         n_eq_constr=1,
                          xl=0, 
                          xu=1)
 
@@ -32,7 +33,10 @@ class WorkflowSchedulingProblem(ElementwiseProblem):
                 solution_matrix[i] = np.zeros(self.n_machines)
                 solution_matrix[i, np.random.randint(0, self.n_machines)] = 1
         makespan, cost = compute_metrics(self.problem, solution_matrix)
+        # objectvive values: makespan and cost
         out["F"] = np.array([makespan, cost])
+        # equality constraint: each task is assigned to exactly one machine
+        out["H"] = np.sum(np.sum(solution_matrix, axis=1) - 1)
 
 def run_nsga2(problem, population_size, generations, verbose=True):
     problem = WorkflowSchedulingProblem(problem)

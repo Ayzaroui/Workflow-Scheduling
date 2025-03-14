@@ -147,6 +147,10 @@ def compute_metrics(dataset, solution):
         if not np.all(np.sum(solution, axis=1) == 1):
             print("Error! Each task must be assigned to exactly one machine")
             return False
+        # variables are binary
+        if not np.all(np.logical_or(solution == 0, solution == 1)):
+            print("Error! Variables must be binary")
+            return False
         return True
     
     # Check dimensions
@@ -155,7 +159,7 @@ def compute_metrics(dataset, solution):
     
     # Check feasibility
     if not check_constraint(solution):
-        return np.inf, np.inf
+        raise ValueError("Infeasible solution")
     
     # Schedule tasks
     schedule(dataset, solution)
