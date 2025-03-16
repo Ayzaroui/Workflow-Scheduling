@@ -3,8 +3,8 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from data.constants.task import Task
-from data.constants.machine import Machine
+from constants.task import Task
+from constants.machine import Machine
 
 # Random Seed
 random.seed()
@@ -12,17 +12,22 @@ np.random.seed(random.randint(0, 2**12 - 1))
 
 # Paramètres
 cloud_machines_params_range = {
-    "bandwidth": (100, 10000), 
-    "cpu_cost": (0.1, 10), 
-    "cpu_mips": (5000, 100000), 
-    "bandwidth_cost": (0.01, 0.5), 
+    "bandwidth": (1000, 100000),  # En Mbit/s
+    "cpu_cost": (0.05, 3.0),      # En $/heure
+    "cpu_mips": (10000, 50000),   # En MIPS
+    "bandwidth_cost": (0.01, 0.1) # En $/Go
 }
 
 fog_machines_params_range = {
-    "bandwidth": (1, 1000), 
-    "cpu_cost": (0.05, 1), 
-    "cpu_mips": (1000, 50000), 
-    "bandwidth_cost": (0.001, 0.05), 
+    "bandwidth": (10, 1000),        # En Mbit/s
+    "cpu_cost": (0.01, 0.5),        # En $/heure
+    "cpu_mips": (1000, 10000),      # En MIPS
+    "bandwidth_cost": (0.005, 0.05) # En $/Go
+}
+
+fog_cloud_bandwidth_range = {
+    "bandwidth": (10, 1000),        # En Mbit/s
+    "bandwidth_cost": (0.005, 0.05) # En $/Go
 }
 
 task_params_range = {
@@ -31,17 +36,50 @@ task_params_range = {
 }
 
 # Fonctions
-def generate_bandwidth(n_machines, is_cloud):
-    machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
-    bandwidth = np.random.randint(machines_params_range["bandwidth"][0], machines_params_range["bandwidth"][1], size=(n_machines, n_machines))
+def generate_bandwidth(machines):
+    n_machines = len(machines)
+    bandwidth = np.zeros((n_machines, n_machines), dtype=int)
+    
+    for i in range(n_machines):
+        for j in range(i + 1, n_machines):
+            if machines[i].is_cloud and machines[j].is_cloud:
+                machines_params_range = cloud_machines_params_range
+            elif not machines[i].is_cloud and not machines[j].is_cloud:
+                machines_params_range = fog_machines_params_range
+            else:
+                machines_params_range = fog_cloud_bandwidth_range
+            
+            min_bw, max_bw = machines_params_range["bandwidth"]
+            bw_value = np.random.randint(min_bw, max_bw)
+            
+            bandwidth[i, j] = bw_value
+            bandwidth[j, i] = bw_value 
+    
     np.fill_diagonal(bandwidth, 0)
     return bandwidth
 
-def generate_bandwidth_cost(n_machines, is_cloud):
-    machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
-    bandwidth_cost = np.random.uniform(machines_params_range["bandwidth_cost"][0], machines_params_range["bandwidth_cost"][1], size=(n_machines, n_machines))
+def generate_bandwidth_cost(machines):
+    n_machines = len(machines)
+    bandwidth_cost = np.zeros((n_machines, n_machines), dtype=int)
+    
+    for i in range(n_machines):
+        for j in range(i + 1, n_machines):
+            if machines[i].is_cloud and machines[j].is_cloud:
+                machines_params_range = cloud_machines_params_range
+            elif not machines[i].is_cloud and not machines[j].is_cloud:
+                machines_params_range = fog_machines_params_range
+            else:
+                machines_params_range = fog_cloud_bandwidth_range
+            
+            min_bw, max_bw = machines_params_range["bandwidth_cost"]
+            bw_value = np.random.uniform(min_bw, max_bw)
+            
+            bandwidth_cost[i, j] = bw_value
+            bandwidth_cost[j, i] = bw_value 
+
     np.fill_diagonal(bandwidth_cost, 0)
     return bandwidth_cost
+
 
 def generer_parents(task_id):
     if task_id == 0:
@@ -57,7 +95,8 @@ def generate_data_volume(n_tasks):
     np.fill_diagonal(data_volume, 0)
     return data_volume
 
-def generate_machines(n_machines, is_cloud):
+def generate_machines(n_machines):
+    is_cloud = True if np.random.rand() < 0.5 else False
     machines = []
     for i in range(n_machines):
         machines_params_range = cloud_machines_params_range if is_cloud else fog_machines_params_range
@@ -95,13 +134,13 @@ class RandomDataset():
         self.n_machines = n_machines
         self.n_tasks = n_tasks
 
-        self.machines = generate_machines(n_machines, is_cloud)
+        self.machines = generate_machines(n_machines)
         self.tasks = generate_tasks_graph(n_tasks) 
 
         self.data_volume = generate_data_volume(n_tasks)
 
-        self.bandwidth = generate_bandwidth(n_machines, is_cloud)
-        self.bandwidth_cost = generate_bandwidth_cost(n_machines, is_cloud)
+        self.bandwidth = generate_bandwidth(self.machines)
+        self.bandwidth_cost = generate_bandwidth_cost(self.machines)
 
     def plot(self):
         return plot_task_graph(self.tasks)

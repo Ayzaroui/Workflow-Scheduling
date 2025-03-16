@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 import pandas as pd
 
-from data.constants.task import Task
-from data.constants.machine import Machine
+from constants.task import Task
+from constants.machine import Machine
 
 # Random Seed
 random.seed()
@@ -199,8 +199,8 @@ class Dataset():
 #####################################################
 if __name__ == '__main__':
     dataset = Dataset(
-        workflow_path="Montage_100.xml",
-        environment_path="task120.xlsx"
+        workflow_path=r"data\real_dataset\Montage_100.xml",
+        environment_path=r"data\real_dataset\task120.xlsx"
     )
     print(dataset.get_machine_by_id(0))
     print(dataset.get_task_by_id(2))
