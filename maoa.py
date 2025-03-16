@@ -1,8 +1,11 @@
+import os
+import sys
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data.randomDataset import RandomDataset
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'data')))
+from data.dataset import Dataset
 from target_metrics import compute_metrics
 
 
@@ -179,10 +182,16 @@ def plot_pareto_front(archive):
     plt.show()
 
 if __name__ == '__main__':
-    dataset = RandomDataset(n_machines=5, n_tasks=10)
+
+    dataset = Dataset(
+        # workflow_path=os.path.join("data", "CyberShake_100.xml"),
+        # workflow_path=os.path.join("data", "Epigenomics_100.xml"),
+        # workflow_path=os.path.join("data", "Inspiral_100.xml"),
+        workflow_path=os.path.join("data/real_dataset", "Montage_100.xml"),
+        environment_path=os.path.join("data/real_dataset", "task120.xlsx")
+    )   
     dataset.plot()
     archive = run_moaoa(problem=dataset, iterations=100, verbose=True)
-    print(archive)
+    print(archive[:, -2:])
     print(f'Archive Size: {len(archive)}')
     plot_pareto_front(archive)
-    dataset.plot_schedule()

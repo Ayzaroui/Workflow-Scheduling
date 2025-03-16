@@ -1,23 +1,19 @@
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
-from data.dataset import Dataset
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'data')))
+from data.randomDataset import RandomDataset
 from maoa import run_moaoa
 from nsga import run_nsga2
 
 
-dataset = Dataset(
-        # workflow_path=os.path.join("data", "CyberShake_100.xml"),
-        # workflow_path=os.path.join("data", "Epigenomics_100.xml"),
-        # workflow_path=os.path.join("data", "Inspiral_100.xml"),
-        workflow_path=os.path.join("data", "Montage_100.xml"),
-        environment_path=os.path.join("data", "task120.xlsx")
-)
-
 POPULATION_SIZE = 50
 GENERATIONS = 100
 RUNS = 10
+N_MACHINES = 7
+N_TASKS = 12
 
 
 def check_moaoa(archive):
@@ -73,9 +69,11 @@ if __name__ == '__main__':
     total_comp = 0
 
     for run in range(RUNS):
+        dataset = RandomDataset(n_machines=N_MACHINES, n_tasks=N_TASKS)
         print(f"Run {run + 1}/{RUNS}")
         
         _, nsga2_result = run_nsga2(dataset, POPULATION_SIZE, GENERATIONS)
+        dataset.reset_schedule()
         moaoa_result = run_moaoa(problem=dataset, size=POPULATION_SIZE, iterations=GENERATIONS)
         moaoa_result = check_moaoa(moaoa_result)
 

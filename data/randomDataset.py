@@ -1,3 +1,5 @@
+import os
+import sys
 import random
 import numpy as np
 import networkx as nx
@@ -129,7 +131,7 @@ def plot_task_graph(tasks):
 
 # Classe
 class RandomDataset():
-    def __init__(self, n_machines, n_tasks, is_cloud=True):
+    def __init__(self, n_machines, n_tasks):
        
         self.n_machines = n_machines
         self.n_tasks = n_tasks

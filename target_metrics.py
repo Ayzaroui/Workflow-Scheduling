@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def f_cost(dataset, solution):
     """ Fonction objectif de coût.
     Args: 
@@ -171,9 +170,13 @@ def compute_metrics(dataset, solution):
 
 
 if __name__ == '__main__':
+    import os 
+    import sys
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'data')))
+    from data.randomDataset import RandomDataset
+
     # Test functions
-    from data.dataset import Dataset
-    dataset = Dataset(n_machines=5, n_tasks=7)
+    dataset = RandomDataset(n_machines=5, n_tasks=7)
     solution = np.zeros((dataset.n_tasks, dataset.n_machines))
 
     for line in solution:
@@ -184,9 +187,5 @@ if __name__ == '__main__':
     print("Makespan:", makespan)
     print("Cost:", cost)
 
-    for task in dataset.tasks:
-        print(task)
-    for machine in dataset.machines:
-        print(machine)
-
     dataset.plot()
+    dataset.plot_schedule()

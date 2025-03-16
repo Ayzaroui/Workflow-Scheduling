@@ -1,3 +1,5 @@
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,7 +12,8 @@ from pymoo.termination import get_termination
 from pymoo.operators.sampling.rnd import BinaryRandomSampling
 from pymoo.core.repair import Repair
 
-from data.randomDataset import RandomDataset
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'data')))
+from data.dataset import Dataset
 from target_metrics import compute_metrics
 from maoa import repair_solution
 
@@ -74,11 +77,17 @@ def plot_pareto_front(archive):
     plt.show()
 
 if __name__ == '__main__':
-    dataset = RandomDataset(n_machines=5, n_tasks=10)
+    dataset = Dataset(
+        # workflow_path=os.path.join("data", "CyberShake_100.xml"),
+        # workflow_path=os.path.join("data", "Epigenomics_100.xml"),
+        # workflow_path=os.path.join("data", "Inspiral_100.xml"),
+        workflow_path=os.path.join("data/real_dataset", "Montage_100.xml"),
+        environment_path=os.path.join("data/real_dataset", "task120.xlsx")
+    ) 
     dataset.plot()
     poppulation, nsga2_result = run_nsga2(dataset, 50, 100)
     print(nsga2_result)
     print(f'Archive Size: {len(nsga2_result)}')
     compute_metrics(dataset, poppulation[0].reshape((dataset.n_tasks, dataset.n_machines)))
     plot_pareto_front(nsga2_result)
-    dataset.plot_schedule()
+
